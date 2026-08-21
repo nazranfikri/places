@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Peribadi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F4EC;
+    --paper:#FFFFFF;
+    --ink:#242A24;
+    --ink-muted:#6E7268;
+    --ink-faint:#A3A69B;
+    --line:#E4DFCF;
+    --sage:#3F6C51;
+    --sage-dark:#2C4E39;
+    --sage-tint:#E7EFE6;
+    --gold:#B4813C;
+    --gold-tint:#F5E9D6;
+    --danger:#B3503F;
+    --radius-sm:6px;
+    --radius-md:10px;
+    --radius-lg:16px;
+    --shadow:0 1px 2px rgba(36,42,36,0.04), 0 4px 16px rgba(36,42,36,0.04);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(circle, var(--line) 1px, transparent 1px);
+    background-size: 22px 22px;
+    background-attachment: fixed;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  a{color:var(--sage-dark);}
+  button{font-family:inherit;cursor:pointer;}
+  input,textarea{font-family:inherit;}
+  ::selection{background:var(--sage-tint);}
+  *:focus-visible{outline:2px solid var(--sage); outline-offset:2px;}
+
+  .app{
+    display:flex;
+    min-height:100vh;
+    max-width:1180px;
+    margin:0 auto;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:240px;
+    flex-shrink:0;
+    padding:32px 20px;
+    display:flex;
+    flex-direction:column;
+    position:sticky;
+    top:0;
+    height:100vh;
+  }
+  .brand{
+    padding:0 8px 28px 8px;
+  }
+  .brand-mark{
+    width:34px;height:34px;
+    border-radius:9px;
+    background:var(--sage);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;
+    font-size:17px;
+    margin-bottom:14px;
+  }
+  .brand h1{font-size:19px; color:var(--ink); line-height:1.25;}
+  .brand p{margin:4px 0 0; font-size:12.5px; color:var(--ink-faint);}
+
+  nav{display:flex; flex-direction:column; gap:2px; flex:1;}
+  .nav-item{
+    display:flex; align-items:center; gap:11px;
+    padding:10px 12px;
+    border:none; background:none;
+    border-radius:var(--radius-sm);
+    color:var(--ink-muted);
+    font-size:14px; font-weight:500;
+    text-align:left;
+    border-left:2px solid transparent;
+  }
+  .nav-item svg{width:17px;height:17px; flex-shrink:0; opacity:0.85;}
+  .nav-item:hover{background:rgba(63,108,81,0.07); color:var(--ink);}
+  .nav-item.active{
+    background:var(--sage-tint);
+    color:var(--sage-dark);
+    border-left:2px solid var(--sage);
+  }
+
+  .sidebar-footer{
+    display:flex; flex-direction:column; gap:6px;
+    padding-top:16px; margin-top:16px;
+    border-top:1px solid var(--line);
+  }
+  .ghost-btn{
+    display:flex; align-items:center; gap:9px;
+    border:none; background:none;
+    padding:8px 12px; border-radius:var(--radius-sm);
+    font-size:12.5px; color:var(--ink-faint);
+  }
+  .ghost-btn svg{width:14px;height:14px;}
+  .ghost-btn:hover{background:rgba(36,42,36,0.04); color:var(--ink-muted);}
+
+  /* ---------- Main content ---------- */
+  main{
+    flex:1;
+    padding:44px 48px 60px;
+    min-width:0;
+  }
+  .view{display:none;}
+  .view.active{display:block; animation:fade 0.25s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+  .view-header{margin-bottom:28px;}
+  .view-header h2{font-size:26px; color:var(--ink);}
+  .view-header p{margin:6px 0 0; font-size:14px; color:var(--ink-muted);}
+
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+  }
+
+  label{
+    display:block; font-size:12.5px; font-weight:600;
+    color:var(--ink-muted); margin-bottom:6px;
+  }
+  input[type=text],input[type=email],input[type=tel],textarea{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    background:#FEFDFB;
+    font-size:14px;
+    color:var(--ink);
+  }
+  input:focus,textarea:focus{border-color:var(--sage); outline:none; box-shadow:0 0 0 3px var(--sage-tint);}
+  textarea{resize:vertical; min-height:64px; line-height:1.5;}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:10px 18px;
+    border-radius:var(--radius-sm);
+    font-size:13.5px; font-weight:600;
+    border:1px solid var(--line);
+    background:var(--paper); color:var(--ink);
+  }
+  .btn svg{width:15px;height:15px;}
+  .btn:hover{border-color:var(--ink-faint);}
+  .btn-primary{background:var(--sage); border-color:var(--sage); color:#fff;}
+  .btn-primary:hover{background:var(--sage-dark); border-color:var(--sage-dark);}
+  .btn-block{width:100%; justify-content:center;}
+
+  .icon-btn{
+    border:none; background:none; color:var(--ink-faint);
+    padding:6px; border-radius:var(--radius-sm); flex-shrink:0;
+  }
+  .icon-btn svg{width:16px;height:16px; display:block;}
+  .icon-btn:hover{color:var(--danger); background:rgba(179,80,63,0.08);}
+
+  .empty-state{
+    text-align:center; padding:48px 20px; color:var(--ink-faint);
+  }
+  .empty-state svg{width:34px;height:34px; margin-bottom:10px; opacity:0.6;}
+  .empty-state p{margin:0; font-size:13.5px;}
+
+  /* ---------- To-do ---------- */
+  .add-form{padding:22px; margin-bottom:26px;}
+  .field-row{margin-bottom:14px;}
+  .field-row:last-child{margin-bottom:0;}
+
+  .progress-wrap{
+    display:flex; align-items:center; gap:16px;
+    padding:16px 22px; margin-bottom:22px;
+  }
+  .progress-track{
+    flex:1; height:7px; background:var(--sage-tint);
+    border-radius:99px; overflow:hidden;
+  }
+  .progress-fill{height:100%; background:var(--sage); border-radius:99px; transition:width 0.3s ease;}
+  .progress-label{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--sage-dark); white-space:nowrap;}
+
+  .task-list{display:flex; flex-direction:column; gap:10px;}
+  .task-item{
+    display:flex; align-items:flex-start; gap:13px;
+    padding:15px 18px;
+  }
+  .task-check{
+    width:19px;height:19px; margin-top:2px; flex-shrink:0;
+    accent-color:var(--sage); cursor:pointer;
+  }
+  .task-body{flex:1; min-width:0;}
+  .task-title{font-size:14.5px; font-weight:500; margin:0;}
+  .task-remark{font-size:13px; color:var(--ink-muted); margin:4px 0 0; line-height:1.5;}
+  .task-item.done .task-title{color:var(--ink-faint); text-decoration:line-through;}
+  .task-item.done .task-remark{color:var(--ink-faint);}
+
+  /* ---------- Contacts ---------- */
+  .contact-grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+    gap:14px;
+  }
+  .contact-card{padding:18px; position:relative;}
+  .contact-top{display:flex; gap:11px; align-items:flex-start; margin-bottom:12px; padding-right:22px;}
+  .avatar{
+    width:38px;height:38px; border-radius:10px; flex-shrink:0;
+    background:var(--gold-tint); color:var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:600; font-size:13.5px; font-family:'Fraunces',serif;
+  }
+  .contact-name{font-size:14.5px; font-weight:600; margin:0;}
+  .contact-role{font-size:12.5px; color:var(--ink-muted); margin:2px 0 0;}
+  .contact-remove{position:absolute; top:14px; right:14px;}
+  .contact-detail{
+    display:flex; align-items:center; gap:8px;
+    font-size:12.5px; color:var(--ink-muted);
+    padding:5px 0;
+  }
+  .contact-detail svg{width:14px;height:14px; flex-shrink:0; color:var(--ink-faint);}
+  .contact-detail a{color:var(--ink-muted); text-decoration:none;}
+  .contact-detail a:hover{color:var(--sage-dark);}
+
+  /* ---------- Portfolio ---------- */
+  .resume-card{padding:34px;}
+  .resume-head{
+    display:grid; grid-template-columns:1.3fr 1fr; gap:20px 28px;
+    padding-bottom:22px; margin-bottom:22px; border-bottom:1px solid var(--line);
+  }
+  .resume-head input{font-size:15px;}
+  .resume-name-input{font-family:'Fraunces',serif; font-size:22px !important; font-weight:500; padding:6px 8px !important; border:1px solid transparent !important; background:none !important;}
+  .resume-name-input:hover{border-color:var(--line) !important;}
+  .resume-title-input{font-size:14.5px !important; color:var(--sage-dark); padding:4px 8px !important; border:1px solid transparent !important; background:none !important; font-weight:500;}
+  .resume-title-input:hover{border-color:var(--line) !important;}
+  .contact-mini-grid{display:flex; flex-direction:column; gap:8px; justify-content:center;}
+  .contact-mini-grid .field-row{margin:0;}
+  .contact-mini-grid label{margin-bottom:4px;}
+
+  .resume-section{margin-bottom:26px;}
+  .resume-section:last-child{margin-bottom:0;}
+  .resume-section-title{
+    font-size:11.5px; font-weight:700; letter-spacing:0.06em;
+    text-transform:uppercase; color:var(--sage-dark);
+    margin-bottom:12px; display:flex; align-items:center; gap:8px;
+  }
+  .resume-section-title::after{content:''; flex:1; height:1px; background:var(--line);}
+
+  .skills-wrap{display:flex; flex-wrap:wrap; gap:8px;}
+  .skill-tag{
+    background:var(--sage-tint); color:var(--sage-dark);
+    font-size:12.5px; font-weight:500;
+    padding:5px 12px; border-radius:99px;
+  }
+
+  .entry-card{
+    border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:16px 18px; margin-bottom:12px; position:relative;
+  }
+  .entry-card:last-child{margin-bottom:0;}
+  .entry-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;}
+  .entry-grid .field-row{margin-bottom:0;}
+  .entry-remove{position:absolute; top:12px; right:12px;}
+
+  .section-add-btn{margin-top:2px;}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:820px){
+    .app{flex-direction:column;}
+    .sidebar{
+      width:100%; height:auto; position:relative;
+      padding:20px; flex-direction:row; align-items:center; gap:16px;
+    }
+    .brand{padding:0; display:flex; align-items:center; gap:10px;}
+    .brand-mark{margin-bottom:0;}
+    .brand p{display:none;}
+    nav{flex-direction:row; flex:1; overflow-x:auto;}
+    .nav-item{border-left:none; border-bottom:2px solid transparent; white-space:nowrap;}
+    .nav-item.active{border-left:none; border-bottom:2px solid var(--sage);}
+    .sidebar-footer{display:none;}
+    main{padding:28px 20px 48px;}
+    .resume-head{grid-template-columns:1fr;}
+    .entry-grid{grid-template-columns:1fr;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .view.active{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">P</div>
+      <h1>Dashboard Peribadi</h1>
+      <p>Ruang kerja peribadi anda</p>
+    </div>
+
+    <nav>
+      <button class="nav-item active" data-view="todo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="3"/></svg>
+        Senarai Tugasan
+      </button>
+      <button class="nav-item" data-view="contacts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 19c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5"/><path d="M16.5 5.2c1.5.5 2.5 1.9 2.5 3.4 0 1.6-1.1 3-2.6 3.4"/><path d="M18.5 13.7c2.3.7 3.8 2.5 3.8 4.8"/></svg>
+        Kenalan
+      </button>
+      <button class="nav-item" data-view="portfolio">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="7" width="19" height="13" rx="2.5"/><path d="M8 7V5.5A2.5 2.5 0 0 1 10.5 3h3A2.5 2.5 0 0 1 16 5.5V7"/><path d="M2.5 12.5h19"/></svg>
+        Portfolio
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="ghost-btn" id="exportBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+        Eksport data
+      </button>
+      <button class="ghost-btn" id="importBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 19h16"/></svg>
+        Import data
+      </button>
+      <input type="file" id="importFile" accept="application/json" style="display:none;">
+    </div>
+  </aside>
+
+  <main>
+    <!-- TO-DO VIEW -->
+    <section class="view active" id="view-todo">
+      <div class="view-header">
+        <h2>Senarai Tugasan</h2>
+        <p>Susun kerja anda dan jejaki kemajuan.</p>
+      </div>
+
+      <div class="card add-form">
+        <div class="field-row">
+          <label for="taskTitle">Tugasan</label>
+          <input type="text" id="taskTitle" placeholder="Apa yang perlu dilakukan?">
+        </div>
+        <div class="field-row">
+          <label for="taskRemark">Catatan (pilihan)</label>
+          <textarea id="taskRemark" placeholder="Butiran atau nota tambahan..."></textarea>
+        </div>
+        <div class="field-row">
+          <button class="btn btn-primary" id="addTaskBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah tugasan
+          </button>
+        </div>
+      </div>
+
+      <div class="card progress-wrap" id="progressWrap" style="display:none;">
+        <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%;"></div></div>
+        <span class="progress-label" id="progressLabel">0/0 selesai</span>
+      </div>
+
+      <div class="task-list card" id="taskList" style="padding:8px;"></div>
+      <div class="empty-state card" id="taskEmpty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 11h8M8 15h5"/></svg>
+        <p>Tiada tugasan lagi. Tambah satu untuk bermula.</p>
+      </div>
+    </section>
+
+    <!-- CONTACTS VIEW -->
+    <section class="view" id="view-contacts">
+      <div class="view-header">
+        <h2>Kenalan</h2>
+        <p>Simpan maklumat semua orang yang penting.</p>
+      </div>
+
+      <div class="card add-form">
+        <div class="entry-grid" style="margin-bottom:14px;">
+          <div class="field-row"><label for="cName">Nama</label><input type="text" id="cName" placeholder="Nama penuh"></div>
+          <div class="field-row"><label for="cEmail">Emel</label><input type="email" id="cEmail" placeholder="nama@syarikat.com"></div>
+          <div class="field-row"><label for="cPhone">Nombor telefon</label><input type="tel" id="cPhone" placeholder="+60 12-345 6789"></div>
+          <div class="field-row"><label for="cCompany">Syarikat</label><input type="text" id="cCompany" placeholder="Nama syarikat"></div>
+        </div>
+        <div class="field-row">
+          <label for="cRole">Jawatan</label>
+          <input type="text" id="cRole" placeholder="Jawatan / peranan">
+        </div>
+        <div class="field-row">
+          <button class="btn btn-primary" id="addContactBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah kenalan
+          </button>
+        </div>
+      </div>
+
+      <div class="contact-grid" id="contactGrid"></div>
+      <div class="empty-state card" id="contactEmpty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 19c0-3.3 2.9-5.5 6.5-5.5s6.5 2.2 6.5 5.5"/></svg>
+        <p>Tiada kenalan lagi. Tambah satu untuk bermula.</p>
+      </div>
+    </section>
+
+    <!-- PORTFOLIO VIEW -->
+    <section class="view" id="view-portfolio">
+      <div class="view-header">
+        <h2>Portfolio</h2>
+        <p>Profil ringkas seperti resume anda.</p>
+      </div>
+
+      <div class="card resume-card">
+        <div class="resume-head">
+          <div>
+            <input type="text" class="resume-name-input" id="pName" placeholder="Nama penuh anda">
+            <input type="text" class="resume-title-input" id="pTitle" placeholder="Jawatan / gelaran profesional">
+          </div>
+          <div class="contact-mini-grid">
+            <div class="field-row"><input type="email" id="pEmail" placeholder="Emel"></div>
+            <div class="field-row"><input type="tel" id="pPhone" placeholder="Nombor telefon"></div>
+          </div>
+        </div>
+
+        <div class="resume-section">
+          <div class="resume-section-title">Ringkasan diri</div>
+          <textarea id="pSummary" placeholder="Perkenalkan diri anda secara ringkas — latar belakang, kepakaran, dan apa yang anda tawarkan." style="min-height:80px;"></textarea>
+        </div>
+
+        <div class="resume-section">
+          <div class="resume-section-title">Kemahiran</div>
+          <input type="text" id="pSkills" placeholder="Taipkan kemahiran, dipisahkan dengan koma — cth: Pengurusan Dokumen, Excel, Komunikasi">
+          <div class="skills-wrap" id="skillsPreview" style="margin-top:12px;"></div>
+        </div>
+
+        <div class="resume-section">
+          <div class="resume-section-title">Pengalaman kerja</div>
+          <div id="experienceList"></div>
+          <button class="btn section-add-btn" id="addExpBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah pengalaman
+          </button>
+        </div>
+
+        <div class="resume-section">
+          <div class="resume-section-title">Pendidikan</div>
+          <div id="educationList"></div>
+          <button class="btn section-add-btn" id="addEduBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah pendidikan
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var state = {
+    tasks: [],
+    contacts: [],
+    portfolio: { name:"", title:"", email:"", phone:"", summary:"", skills:"", experience:[], education:[] }
+  };
+
+  var uid = function(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); };
+
+  var trashSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg>';
+  var mailSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M3 6.5l9 6.5 9-6.5"/></svg>';
+  var phoneSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5c0-1 1-2 2-2h2l2 5-2 1.5c1 2.3 2.7 4 5 5l1.5-2 5 2v2c0 1-1 2-2 2C9.5 21 3 14.5 3 6.5"/></svg>';
+
+  function escapeHtml(str){
+    return (str||"").replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function initials(name){
+    var parts = (name||"").trim().split(/\s+/).filter(Boolean);
+    if(!parts.length) return "?";
+    if(parts.length===1) return parts[0].slice(0,2).toUpperCase();
+    return (parts[0][0]+parts[parts.length-1][0]).toUpperCase();
+  }
+
+  /* ---------- Navigation ---------- */
+  document.querySelectorAll(".nav-item").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll(".nav-item").forEach(function(b){ b.classList.remove("active"); });
+      document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-"+btn.dataset.view).classList.add("active");
+    });
+  });
+
+  /* ---------- Tasks ---------- */
+  function renderTasks(){
+    var list = document.getElementById("taskList");
+    var empty = document.getElementById("taskEmpty");
+    var progWrap = document.getElementById("progressWrap");
+
+    if(state.tasks.length===0){
+      list.style.display="none"; empty.style.display="block"; progWrap.style.display="none";
+      return;
+    }
+    list.style.display="flex"; list.style.flexDirection="column"; list.style.gap="6px";
+    empty.style.display="none"; progWrap.style.display="flex";
+
+    var done = state.tasks.filter(function(t){return t.completed;}).length;
+    var pct = Math.round((done/state.tasks.length)*100);
+    document.getElementById("progressFill").style.width = pct+"%";
+    document.getElementById("progressLabel").textContent = done+"/"+state.tasks.length+" selesai";
+
+    list.innerHTML = state.tasks.map(function(t){
+      return '<div class="task-item'+(t.completed?" done":"")+'">'
+        + '<input type="checkbox" class="task-check" '+(t.completed?"checked":"")+' data-id="'+t.id+'">'
+        + '<div class="task-body"><p class="task-title">'+escapeHtml(t.title)+'</p>'
+        + (t.remark? '<p class="task-remark">'+escapeHtml(t.remark)+'</p>' : '')
+        + '</div>'
+        + '<button class="icon-btn task-remove" data-id="'+t.id+'" aria-label="Padam tugasan">'+trashSvg+'</button>'
+        + '</div>';
+    }).join("");
+
+    list.querySelectorAll(".task-check").forEach(function(cb){
+      cb.addEventListener("change", function(){
+        var t = state.tasks.find(function(x){return x.id===cb.dataset.id;});
+        if(t){ t.completed = cb.checked; renderTasks(); }
+      });
+    });
+    list.querySelectorAll(".task-remove").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        state.tasks = state.tasks.filter(function(x){return x.id!==btn.dataset.id;});
+        renderTasks();
+      });
+    });
+  }
+
+  document.getElementById("addTaskBtn").addEventListener("click", function(){
+    var titleEl = document.getElementById("taskTitle");
+    var remarkEl = document.getElementById("taskRemark");
+    var title = titleEl.value.trim();
+    if(!title) { titleEl.focus(); return; }
+    state.tasks.push({ id:uid(), title:title, remark:remarkEl.value.trim(), completed:false });
+    titleEl.value=""; remarkEl.value="";
+    titleEl.focus();
+    renderTasks();
+  });
+  document.getElementById("taskTitle").addEventListener("keydown", function(e){
+    if(e.key==="Enter"){ e.preventDefault(); document.getElementById("addTaskBtn").click(); }
+  });
+
+  /* ---------- Contacts ---------- */
+  function renderContacts(){
+    var grid = document.getElementById("contactGrid");
+    var empty = document.getElementById("contactEmpty");
+
+    if(state.contacts.length===0){
+      grid.style.display="none"; empty.style.display="block";
+      return;
+    }
+    grid.style.display="grid"; empty.style.display="none";
+
+    grid.innerHTML = state.contacts.map(function(c){
+      var roleLine = [c.role, c.company].filter(Boolean).join(" di ");
+      return '<div class="card contact-card">'
+        + '<button class="icon-btn contact-remove" data-id="'+c.id+'" aria-label="Padam kenalan">'+trashSvg+'</button>'
+        + '<div class="contact-top"><div class="avatar">'+initials(c.name)+'</div>'
+        + '<div><p class="contact-name">'+escapeHtml(c.name)+'</p>'
+        + (roleLine? '<p class="contact-role">'+escapeHtml(roleLine)+'</p>' : '')
+        + '</div></div>'
+        + (c.email? '<div class="contact-detail">'+mailSvg+'<a href="mailto:'+encodeURIComponent(c.email)+'">'+escapeHtml(c.email)+'</a></div>' : '')
+        + (c.phone? '<div class="contact-detail">'+phoneSvg+'<a href="tel:'+encodeURIComponent(c.phone)+'">'+escapeHtml(c.phone)+'</a></div>' : '')
+        + '</div>';
+    }).join("");
+
+    grid.querySelectorAll(".contact-remove").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        state.contacts = state.contacts.filter(function(x){return x.id!==btn.dataset.id;});
+        renderContacts();
+      });
+    });
+  }
+
+  document.getElementById("addContactBtn").addEventListener("click", function(){
+    var nameEl = document.getElementById("cName");
+    var name = nameEl.value.trim();
+    if(!name){ nameEl.focus(); return; }
+    state.contacts.push({
+      id:uid(), name:name,
+      email:document.getElementById("cEmail").value.trim(),
+      phone:document.getElementById("cPhone").value.trim(),
+      company:document.getElementById("cCompany").value.trim(),
+      role:document.getElementById("cRole").value.trim()
+    });
+    ["cName","cEmail","cPhone","cCompany","cRole"].forEach(function(id){ document.getElementById(id).value=""; });
+    nameEl.focus();
+    renderContacts();
+  });
+
+  /* ---------- Portfolio ---------- */
+  var pFields = ["pName","pTitle","pEmail","pPhone","pSummary","pSkills"];
+  var pMap = {pName:"name",pTitle:"title",pEmail:"email",pPhone:"phone",pSummary:"summary",pSkills:"skills"};
+  pFields.forEach(function(id){
+    document.getElementById(id).addEventListener("input", function(e){
+      state.portfolio[pMap[id]] = e.target.value;
+      if(id==="pSkills") renderSkills();
+    });
+  });
+
+  function renderSkills(){
+    var wrap = document.getElementById("skillsPreview");
+    var skills = (state.portfolio.skills||"").split(",").map(function(s){return s.trim();}).filter(Boolean);
+    wrap.innerHTML = skills.map(function(s){ return '<span class="skill-tag">'+escapeHtml(s)+'</span>'; }).join("");
+  }
+
+  function renderExperience(){
+    var wrap = document.getElementById("experienceList");
+    wrap.innerHTML = state.portfolio.experience.map(function(x){
+      return '<div class="entry-card" data-id="'+x.id+'">'
+        + '<button class="icon-btn entry-remove" data-type="exp" data-id="'+x.id+'" aria-label="Padam">'+trashSvg+'</button>'
+        + '<div class="entry-grid">'
+        + '<div class="field-row"><label>Jawatan</label><input type="text" data-field="role" placeholder="Jawatan" value="'+escapeHtml(x.role)+'"></div>'
+        + '<div class="field-row"><label>Syarikat</label><input type="text" data-field="company" placeholder="Nama syarikat" value="'+escapeHtml(x.company)+'"></div>'
+        + '</div>'
+        + '<div class="field-row" style="margin-bottom:12px;"><label>Tempoh</label><input type="text" data-field="period" placeholder="cth: Jan 2022 - Sekarang" value="'+escapeHtml(x.period)+'"></div>'
+        + '<div class="field-row"><label>Penerangan</label><textarea data-field="description" placeholder="Tanggungjawab dan pencapaian utama...">'+escapeHtml(x.description)+'</textarea></div>'
+        + '</div>';
+    }).join("");
+    wireEntryCard(wrap, "experience");
+  }
+
+  function renderEducation(){
+    var wrap = document.getElementById("educationList");
+    wrap.innerHTML = state.portfolio.education.map(function(x){
+      return '<div class="entry-card" data-id="'+x.id+'">'
+        + '<button class="icon-btn entry-remove" data-type="edu" data-id="'+x.id+'" aria-label="Padam">'+trashSvg+'</button>'
+        + '<div class="entry-grid">'
+        + '<div class="field-row"><label>Kelayakan</label><input type="text" data-field="degree" placeholder="cth: Diploma Pentadbiran Perniagaan" value="'+escapeHtml(x.degree)+'"></div>'
+        + '<div class="field-row"><label>Institusi</label><input type="text" data-field="institution" placeholder="Nama institusi" value="'+escapeHtml(x.institution)+'"></div>'
+        + '</div>'
+        + '<div class="field-row"><label>Tempoh</label><input type="text" data-field="period" placeholder="cth: 2018 - 2021" value="'+escapeHtml(x.period)+'"></div>'
+        + '</div>';
+    }).join("");
+    wireEntryCard(wrap, "education");
+  }
+
+  function wireEntryCard(wrap, listKey){
+    wrap.querySelectorAll(".entry-card").forEach(function(card){
+      var id = card.dataset.id;
+      card.querySelectorAll("[data-field]").forEach(function(input){
+        input.addEventListener("input", function(){
+          var entry = state.portfolio[listKey].find(function(x){return x.id===id;});
+          if(entry) entry[input.dataset.field] = input.value;
+        });
+      });
+    });
+    wrap.querySelectorAll(".entry-remove").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var type = btn.dataset.type;
+        var key = type==="exp" ? "experience" : "education";
+        state.portfolio[key] = state.portfolio[key].filter(function(x){return x.id!==btn.dataset.id;});
+        if(key==="experience") renderExperience(); else renderEducation();
+      });
+    });
+  }
+
+  document.getElementById("addExpBtn").addEventListener("click", function(){
+    state.portfolio.experience.push({id:uid(), role:"", company:"", period:"", description:""});
+    renderExperience();
+  });
+  document.getElementById("addEduBtn").addEventListener("click", function(){
+    state.portfolio.education.push({id:uid(), degree:"", institution:"", period:""});
+    renderEducation();
+  });
+
+  function fillPortfolioForm(){
+    pFields.forEach(function(id){ document.getElementById(id).value = state.portfolio[pMap[id]] || ""; });
+    renderSkills(); renderExperience(); renderEducation();
+  }
+
+  /* ---------- Export / Import ---------- */
+  document.getElementById("exportBtn").addEventListener("click", function(){
+    var blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "dashboard-peribadi-data.json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("importBtn").addEventListener("click", function(){
+    document.getElementById("importFile").click();
+  });
+  document.getElementById("importFile").addEventListener("change", function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(evt){
+      try{
+        var data = JSON.parse(evt.target.result);
+        state.tasks = Array.isArray(data.tasks) ? data.tasks : [];
+        state.contacts = Array.isArray(data.contacts) ? data.contacts : [];
+        state.portfolio = data.portfolio || state.portfolio;
+        if(!Array.isArray(state.portfolio.experience)) state.portfolio.experience = [];
+        if(!Array.isArray(state.portfolio.education)) state.portfolio.education = [];
+        renderTasks(); renderContacts(); fillPortfolioForm();
+      }catch(err){
+        alert("Fail tidak sah. Sila pilih fail JSON yang dieksport dari dashboard ini.");
+      }
+      e.target.value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  /* ---------- Init ---------- */
+  renderTasks();
+  renderContacts();
+  fillPortfolioForm();
+})();
+</script>
+</body>
+</html>
