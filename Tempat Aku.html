@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tempat Aku</title>
+<style>
+:root{--bg:#f7f5f0;--card:#fff;--ink:#1f2328;--mute:#6b7280;--line:#e5e1d8;--acc:#0f766e;--on:#fff;--warn:#b42318;box-sizing:border-box;color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14161a;--card:#1d2026;--ink:#ecebe6;--mute:#9aa1ab;--line:#2c3038;--acc:#2dd4bf;--on:#06201d;--warn:#f97066;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14161a;--card:#1d2026;--ink:#ecebe6;--mute:#9aa1ab;--line:#2c3038;--acc:#2dd4bf;--on:#06201d;--warn:#f97066;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+main{max-width:640px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:26px;margin:4px 0 2px}
+.sub{color:var(--mute);margin:0 0 16px}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tab{flex:1;padding:11px 8px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;font:inherit;font-weight:600;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--acc);color:var(--on);border-color:var(--acc)}
+.add{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:8px;margin-bottom:16px}
+.add input{font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);min-width:0;width:100%}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.go{padding:12px;border:0;border-radius:10px;background:var(--acc);color:var(--on);font:inherit;font-weight:700;cursor:pointer}
+ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.card{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.rk{flex:none;min-width:40px;height:40px;border-radius:20px;display:grid;place-items:center;font-weight:800;background:var(--line);color:var(--mute);padding:0 6px}
+.r1{background:#f5c04a;color:#3a2a00}.r2{background:#c9ced6;color:#222}.r3{background:#d9a577;color:#3a2108}
+.bd{flex:1;min-width:0}
+.nm{font-weight:700;overflow-wrap:anywhere}
+.lc{color:var(--mute);font-size:14px}
+.nt{font-size:14px;margin-top:4px;overflow-wrap:anywhere}
+.ac{display:flex;gap:6px;flex:none;flex-wrap:wrap;justify-content:flex-end;max-width:150px}
+.ib{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;min-width:40px;height:40px;padding:0 10px;font:inherit;cursor:pointer}
+.ib:disabled{opacity:.35;cursor:default}
+.ib.ok{color:var(--acc);font-weight:700}
+.ib.danger{background:var(--warn);color:#fff;border-color:var(--warn)}
+.empty{color:var(--mute);text-align:center;padding:28px 8px}
+.st{color:var(--mute);font-size:13px;text-align:center;margin-top:18px}
+</style>
+</head>
+<body>
+<main>
+  <h1>📍 Tempat Aku</h1>
+  <p class="sub">Tempat yang dah pernah pergi (disusun ikut yang paling best) dan tempat yang nak pergi.</p>
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tv" role="tab" onclick="setTab('visited')"></button>
+    <button class="tab" id="tw" role="tab" onclick="setTab('wish')"></button>
+  </div>
+  <div class="add">
+    <input id="n" placeholder="Nama tempat" aria-label="Nama tempat" maxlength="80">
+    <div class="row2">
+      <input id="l" placeholder="Lokasi / negara" aria-label="Lokasi atau negara" maxlength="80">
+      <input id="o" placeholder="Nota (pilihan)" aria-label="Nota" maxlength="200">
+    </div>
+    <button class="go" onclick="add()">Tambah</button>
+  </div>
+  <ul id="list"></ul>
+  <p class="st" id="st"></p>
+</main>
+<script>
+const KEY="tempat-aku-v1";
+let S={visited:[],wish:[]},tab="visited",ref=null,chain=Promise.resolve(),timer;
+const $=s=>document.querySelector(s);
+const norm=x=>({visited:Array.isArray(x&&x.visited)?x.visited:[],wish:Array.isArray(x&&x.wish)?x.wish:[]});
+function h(t,a,...k){const e=document.createElement(t);for(const[x,v]of Object.entries(a||{})){if(x.startsWith("on"))e.addEventListener(x.slice(2),v);else e.setAttribute(x,v)}for(const c of k)if(c!=null)e.append(c);return e}
+function status(t){$("#st").textContent=t}
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  clearTimeout(timer);
+  timer=setTimeout(()=>{
+    if(!ref)return status("Disimpan dalam browser ini sahaja");
+    const snap=JSON.parse(JSON.stringify(S));
+    chain=chain.then(()=>ref&&ref.set(snap)).then(()=>status("Disimpan ✓")).catch(()=>{ref=null;status("Disimpan dalam browser ini sahaja")});
+  },400);
+}
+const btn=(txt,label,fn,cls,off)=>{const b=h("button",{class:"ib "+(cls||""),"aria-label":label,title:label,onclick:fn},txt);b.disabled=!!off;return b};
+function delBtn(i){
+  let armed=false;
+  const b=btn("✕","Padam",()=>{
+    if(armed){S[tab].splice(i,1);save();render();return}
+    armed=true;b.textContent="Padam?";b.classList.add("danger");
+    setTimeout(()=>{armed=false;b.textContent="✕";b.classList.remove("danger")},2500);
+  });
+  return b;
+}
+function mv(i,d){const a=S[tab];[a[i],a[i+d]]=[a[i+d],a[i]];save();render()}
+function done(i){S.visited.push(S.wish.splice(i,1)[0]);save();tab="visited";render();window.scrollTo(0,document.body.scrollHeight)}
+function card(p,i,n){
+  const v=tab==="visited";
+  return h("li",{class:"card"},
+    v?h("span",{class:"rk r"+Math.min(i+1,4)},"#"+(i+1)):null,
+    h("div",{class:"bd"},h("div",{class:"nm"},p.name),p.loc?h("div",{class:"lc"},p.loc):null,p.note?h("div",{class:"nt"},p.note):null),
+    h("div",{class:"ac"},
+      v?btn("▲","Naik ranking",()=>mv(i,-1),"",i===0):btn("✓ Dah pergi","Tandakan dah pergi",()=>done(i),"ok"),
+      v?btn("▼","Turun ranking",()=>mv(i,1),"",i===n-1):null,
+      delBtn(i)));
+}
+function render(){
+  $("#tv").textContent="Pernah Pergi ("+S.visited.length+")";
+  $("#tw").textContent="Nak Pergi ("+S.wish.length+")";
+  $("#tv").setAttribute("aria-selected",tab==="visited");
+  $("#tw").setAttribute("aria-selected",tab==="wish");
+  const box=$("#list");box.replaceChildren();
+  const a=S[tab];
+  if(!a.length)box.append(h("li",{class:"empty"},tab==="visited"?"Belum ada tempat. Tambah tempat yang pernah dikunjungi, kemudian susun ikut yang paling best.":"Belum ada senarai. Tambah tempat yang ingin dikunjungi."));
+  a.forEach((p,i)=>box.append(card(p,i,a.length)));
+}
+function setTab(t){tab=t;render()}
+function add(){
+  const n=$("#n").value.trim();
+  if(!n){$("#n").focus();return}
+  S[tab].push({id:Math.random().toString(36).slice(2,9),name:n,loc:$("#l").value.trim(),note:$("#o").value.trim()});
+  ["#n","#l","#o"].forEach(s=>$(s).value="");
+  save();render();$("#n").focus();
+}
+document.querySelectorAll(".add input").forEach(i=>i.addEventListener("keydown",e=>{if(e.key==="Enter")add()}));
+(async()=>{
+  try{S=norm(JSON.parse(localStorage.getItem(KEY)))}catch(e){}
+  render();
+  try{
+    if(typeof claude!=="undefined"){
+      const [d,u]=await Promise.all([claude.use("db"),claude.use("user")]);
+      const id=u&&await u.id();
+      if(d&&id){
+        const r=d.collection("data/users/"+id).doc("places");
+        const snap=await r.get();
+        if(snap.exists)S=norm(JSON.parse(JSON.stringify(snap.data())));
+        ref=r;render();
+        if(!snap.exists&&(S.visited.length||S.wish.length))save();
+      }
+    }
+  }catch(e){ref=null}
+  status(ref?"Disimpan dalam akaun Claude ✓":"Disimpan dalam browser ini sahaja");
+})();
+</script>
+</body>
+</html>
